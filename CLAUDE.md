@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Analysis of the UCI "Steel Industry Energy Consumption" dataset (`Steel_industry_data.csv`, 15-min readings for 2018, DAEWOO Steel, Gwangyang; CC BY 4.0). Deliverables: an analysis notebook, a static HTML dashboard, and an HTML report. Narrative text is Korean; code and identifiers are English.
 
-Docs: `README.md` (what and results, Korean), `WORKFLOW.md` (step-by-step reproduction, Korean), this file. `tests/test_docs.py` checks that file paths and config names cited in the docs exist, that the Markdown renders under CommonMark (no stray `**`, e.g. `**64%**가` fails) and in-page anchors resolve, and that README's results table matches `outputs/analysis.json`; when an analysis change moves a number, update README's table (and any changed command or name in WORKFLOW.md) in the same change. The README check matches exact phrases (e.g. "평일·주말 구분과 시각·계절만으로 0.88"), so if you reword the table, update `expected` in `test_readme_results_match_pipeline` too.
+Docs: `README.md` (what and results, Korean), `WORKFLOW.md` (step-by-step reproduction, Korean), this file. `tests/test_docs.py` checks that file paths and config names cited in the docs exist, that the Markdown renders under CommonMark (no stray `**`, e.g. `**64%**가` fails) and in-page anchors resolve, and that README's '핵심 결과' section matches `outputs/analysis.json`; when an analysis change moves a number, update that section (and any changed command or name in WORKFLOW.md) in the same change. The README check matches exact phrases (e.g. "평일·주말 구분과 시각·계절만으로 0.88"), so if you reword it, update `expected` in `test_readme_results_match_pipeline` too.
 
 ## Commands
 
