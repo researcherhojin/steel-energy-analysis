@@ -215,7 +215,7 @@ flowchart LR
 - `pipeline.run()`은 분석 모듈의 `run()`을 순서대로 불러 결과 묶음(`Results`)을 만듭니다. 실행 정보(행 수, 기간, 연도)도 여기서 정리합니다.
 - `export.payload()`는 그 결과를 하나의 JSON으로 옮겨 적고 표시용 이름을 붙입니다. 계산은 하지 않습니다. 키를 지우거나 이름을 바꾸면 `SCHEMA_VERSION`을 올립니다.
 - `web/build.py`는 JSON을 HTML 템플릿에 넣습니다. 템플릿이 없는 값을 참조하면 빌드가 **실패**합니다(Jinja `StrictUndefined`). 숫자가 빈칸으로 조용히 나가는 일이 없습니다.
-- `web/pages.py`는 `build/`의 두 페이지에 문서 머리말(doctype, 문자 인코딩, 화면 폭)을 붙이고 첫 화면(`build/site/index.html`)을 더해 `build/site/`에 씁니다. GitHub Actions(`.github/workflows/pages.yml`)가 `main`에 올라온 변경마다 테스트 → 분석 → `web/build.py` → `web/pages.py`를 실행해 GitHub Pages에 배포합니다. 같은 패키지 버전과 시드여도 모델 점수는 운영체제·CPU에 따라 끝자리가 달라질 수 있어서, README 숫자를 만든 환경과 같은 Apple Silicon macOS에서 빌드하고 테스트가 실패하면 배포하지 않습니다. `web/build.py`의 출력은 Artifact 게시용이라 머리말 없이 `<title>`로 시작합니다.
+- `web/pages.py`는 `build/`의 두 페이지에 문서 머리말(doctype, 문자 인코딩, 화면 폭)을 붙이고 첫 화면(`build/site/index.html`)을 더해 `build/site/`에 씁니다. GitHub Actions(`.github/workflows/pages.yml`)가 `main`에 올라온 변경마다 검사(7장) → 분석 → `web/build.py` → `web/pages.py`를 실행해 GitHub Pages에 배포합니다. 같은 패키지 버전과 시드여도 모델 점수는 운영체제·CPU에 따라 끝자리가 달라질 수 있어서, README 숫자를 만든 환경과 같은 Apple Silicon macOS에서 빌드하고 테스트가 실패하면 배포하지 않습니다. `web/build.py`의 출력은 Artifact 게시용이라 머리말 없이 `<title>`로 시작합니다.
 - `tools/readme_figure.py`는 같은 JSON으로 README의 요일×시각 그림(`docs/images/`, 라이트·다크 두 장)을 그립니다. 분석이 바뀌면 다시 실행해 그림도 함께 커밋합니다.
 - `notebooks/build_notebook.py`도 같은 JSON을 읽어 노트북 설명 문장의 숫자를 채웁니다. 숫자 뒤의 조사(예: 0.73이다, 0.97로)는 `fix_josa()`가 맞춥니다.
 
@@ -278,6 +278,8 @@ uv run python notebooks/check_notebook.py   # 노트북 실행 오류: error cel
 uv run python tools/check_platforms.py      # 지원 환경 6개에서 설치 가능한지: 모두 OK
 npx cspell lint --dot "**/*" # (선택, Node.js 필요) 맞춤법: Issues found: 0
 ```
+
+같은 검사를 GitHub Actions도 실행합니다(`.github/workflows/checks.yml`). 풀 리퀘스트마다(`.github/workflows/ci.yml`), 그리고 `main`에 올라온 변경을 배포하기 전에(`.github/workflows/pages.yml`) 돌며, 하나라도 실패하면 배포하지 않습니다. 맞춤법 검사도 CI에서는 필수입니다.
 
 의존성을 바꿨다면(`uv add`, `uv remove`, `uv lock`) `tools/check_platforms.py`를 꼭 다시 실행하세요. 새 패키지가 일부 운영체제나 CPU용 배포를 내지 않으면 여기서 바로 드러납니다.
 
@@ -362,7 +364,10 @@ steel-energy-analysis/
 │   ├── check_platforms.py        지원 환경별 설치 가능 여부 확인(아무것도 설치하지 않음)
 │   └── readme_figure.py          README 그림 생성 → docs/images/
 ├── docs/images/                  README 그림(라이트·다크)
-├── .github/workflows/pages.yml   GitHub Pages 자동 배포
+├── .github/workflows/
+│   ├── checks.yml                검사 모음(린트·노트북·설치 환경·맞춤법, macOS 테스트)
+│   ├── ci.yml                    풀 리퀘스트마다 checks.yml 실행
+│   └── pages.yml                 checks.yml 통과 후 GitHub Pages 자동 배포
 ├── tests/                        pytest (test_architecture.py: 모듈 경계, test_docs.py: 문서)
 ├── outputs/
 │   ├── analysis.json  (생성물)   분석 결과
