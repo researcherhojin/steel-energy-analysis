@@ -319,6 +319,7 @@ npx cspell lint --dot "**/*" # (선택, Node.js 필요) 맞춤법: Issues found:
 | 노트북 그래프의 한글이 네모로 나옴 | 한글 글꼴이 없다는 경고가 함께 나옵니다. 2.3의 안내대로 글꼴을 설치하세요(Linux는 `sudo apt install fonts-nanum`). 설치한 뒤에도 그대로면 matplotlib 글꼴 캐시를 지우고 다시 실행합니다(macOS·Linux `~/.cache/matplotlib`, Windows `%USERPROFILE%\.matplotlib`). 다른 글꼴을 쓰려면 `src/steelenergy/plots.py`의 `KOREAN_FONTS`에 이름을 추가하세요. |
 | git으로 받은 뒤 줄바꿈 때문에 파일이 모두 바뀐 것으로 보임 | `.gitattributes`가 텍스트 파일의 줄바꿈을 LF로 고정합니다. 이 파일이 생기기 전에 받은 저장소라면 `git add --renormalize .`를 한 번 실행하세요. |
 | HTML에서 차트가 안 보임 | 오프라인이거나 CDN 주소가 바뀐 경우입니다. 템플릿의 ECharts 주소(`cdnjs.cloudflare.com/ajax/libs/echarts/5.6.0/…`)가 열리는지 확인하세요. |
+| Linux·Windows에서 `test_readme_results_match_pipeline`만 실패 | 같은 패키지 버전과 시드여도 예측·분류 모델 점수의 끝자리가 운영체제·CPU에 따라 달라집니다(예: Linux x86_64에서 예측 오차 3.92 kWh, Apple Silicon macOS에서 3.94 kWh). README의 숫자는 Apple Silicon macOS 결과입니다. 분석 자체의 오류가 아니며, 웹 페이지는 macOS에서 빌드해 README와 일치시킵니다. |
 | 날짜가 하루씩 밀려 보임 | 원본 시각은 구간이 *끝나는* 시각입니다. 집계는 `operating_day`(구간 시작 기준)로 해야 합니다. |
 
 ---
