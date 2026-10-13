@@ -1,0 +1,29 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "dictionaryDefinitions": [
+    {
+      "name": "project-words",
+      "path": "./.cspell/project-words.txt",
+      "addWords": true
+    }
+  ],
+  "dictionaries": [
+    "project-words"
+  ],
+  "ignorePaths": [
+    ".venv/**",
+    ".git/**",
+    ".pytest_cache/**",
+    ".ruff_cache/**",
+    "**/__pycache__/**",
+    "build/**",
+    "outputs/**",
+    "uv.lock",
+    "*.csv",
+    "*.zip",
+    "*.ipynb",
+    ".python-version",
+    "**/.DS_Store"
+  ]
+}

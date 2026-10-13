@@ -1,0 +1,7 @@
+# Keep line endings stable across Windows, macOS and Linux checkouts.
+* text=auto eol=lf
+# The raw data keeps its original CRLF line endings; never rewrite it.
+*.csv -text
+*.zip binary
+*.pdf binary
+*.png binary

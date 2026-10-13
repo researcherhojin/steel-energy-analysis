@@ -1,0 +1,205 @@
+{%- set wd = kpi.weekday_daytime -%}
+{%- set hours = "%02d–%d시" | format(wd.hours[0], wd.hours[1]) -%}
+<title>제철소 전력 {{ meta.year }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+{% include "common/tokens.css" %}
+{% include "dashboard/dashboard.css" %}
+</style>
+
+<div class="page">
+  <header class="masthead">
+    <div class="title-block">
+      <p class="eyebrow">대우제철 광양 공장 · 15분 단위 전력 기록 · {{ daily[0].date[:10] }} – {{ daily[-1].date[:10] }}</p>
+      <h1>제철소 전력 {{ meta.year }}</h1>
+      <p class="purpose">한 해 동안의 전력 사용 패턴, 사용량 예측, 휴무·이상 일자, 요금 절감 시나리오를 탭별로 본다. 결론과 근거는 함께 공개한 보고서에 정리했다. 금액은 모두 가정 요금 기준이다.</p>
+    </div>
+    <dl class="kpis">
+      <div><dt>연간 사용량</dt><dd class="num">{{ (kpi.annual_kwh / 1000) | num(1) }}<span class="unit">MWh</span></dd><dd class="sub">하루 평균 {{ kpi.mean_daily_kwh | num }} kWh</dd></div>
+      <div><dt>CO₂ 배출량</dt><dd class="num">{{ kpi.annual_co2_t | num(1) }}<span class="unit">t</span></dd><dd class="sub">MWh당 {{ kpi.co2_t_per_mwh | num(3) }} t</dd></div>
+      <div><dt>연간 역률</dt><dd class="num">{{ kpi.annual_pf | num(3) }}</dd><dd class="sub">거의 멈춘 시간대 {{ pf_low | num(2) }}</dd></div>
+      <div><dt>연중 최대 수요</dt><dd class="num">{{ kpi.peak_kw | num }}<span class="unit">kW</span></dd><dd class="sub">가장 큰 15분 평균 전력</dd></div>
+      <div><dt>평일 {{ hours }} 사용 비중</dt><dd class="num">{{ wd.kwh_share | pct }}</dd><dd class="sub">1년 시간의 {{ wd.slot_share | pct }}</dd></div>
+      <div><dt>휴무일 · 이상일</dt><dd class="num">{{ kpi.holiday_shutdowns + kpi.weekday_shutdowns }}<span class="unit">일</span> · {{ kpi.anomalous_days }}<span class="unit">일</span></dd><dd class="sub">휴무: 평일 공휴일 {{ kpi.holiday_shutdowns }}일 + 그 외 평일 {{ kpi.weekday_shutdowns }}일</dd></div>
+    </dl>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="대시보드 영역">
+    <button role="tab" id="tab-pattern" aria-controls="pane-pattern" data-tab="pattern">사용 패턴</button>
+    <button role="tab" id="tab-model" aria-controls="pane-model" data-tab="model">예측 · 분류</button>
+    <button role="tab" id="tab-anomaly" aria-controls="pane-anomaly" data-tab="anomaly">휴무 · 이상</button>
+    <button role="tab" id="tab-scenario" aria-controls="pane-scenario" data-tab="scenario">절감 시나리오</button>
+  </nav>
+
+  <!-- ===== 사용 패턴 ===== -->
+  <section class="pane" id="pane-pattern" role="tabpanel" aria-labelledby="tab-pattern">
+    <p class="question">전력을 언제, 얼마나 몰아서 쓰는가?</p>
+    <div class="filters" aria-label="필터">
+      <div class="filter-group">
+        <span class="filter-label">월 선택</span>
+        <div class="seg" id="month-filter"></div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">요금 시간대</span>
+        <div class="seg" id="band-filter"></div>
+      </div>
+      <button class="reset" id="reset-filters" type="button">필터 초기화</button>
+      <p class="filter-scope">월 선택은 위쪽 네 차트(일 사용량, 요일·시각, 시간대별 비중, 월별 사용량)에, 요금 시간대 선택은 일 사용량과 요일·시각 차트에 적용된다. 아래쪽 세 차트는 1년 전체 기준이다.</p>
+    </div>
+
+    <article class="panel wide">
+      <header><h3 id="daily-title">일 사용량</h3><p class="caption" id="daily-caption"></p></header>
+      <div class="chart" id="c-daily"></div>
+    </article>
+
+    <div class="grid two">
+      <article class="panel">
+        <header><h3>요일 · 시각별 평균 사용량</h3><p class="caption">칸 하나가 한 요일·한 시각의 15분 평균이다. 진할수록 많이 쓴다.</p></header>
+        <div class="chart tall" id="c-heat"></div>
+      </article>
+      <article class="panel">
+        <header><h3 id="bands-title">최대부하 시간대는 시간 {{ lt.Maximum_Load.slot_share | pct }}에 사용량 {{ lt.Maximum_Load.kwh_share | pct }}</h3><p class="caption">요금 시간대별로 시간과 사용량에서 차지하는 비중. 선택한 월 기준이며 요금 시간대 선택과는 무관하다.</p></header>
+        <div class="chart" id="c-bands" style="height:170px"></div>
+        <div class="table-wrap"><table id="t-bands"></table></div>
+      </article>
+    </div>
+
+    <div class="grid two">
+      <article class="panel">
+        <header><h3>월별 하루 평균 사용량</h3><p class="caption">1–2월은 야간에도 가동해서 높다.</p></header>
+        <div class="chart" id="c-month"></div>
+      </article>
+      <article class="panel">
+        <header><h3>역률은 8–10월에 가장 낮다</h3><p class="caption">월 역률. 빨간 점은 요금 할증 기준 {{ meta.tariff.pf_threshold | num(2) }}(가정) 미만인 달로, 할증이 붙은 {{ scenarios.surcharge.months_with_surcharge }}개월이다. 필터와 무관.</p></header>
+        <div class="chart" id="c-month-pf"></div>
+      </article>
+    </div>
+
+    <div class="grid two">
+      <article class="panel">
+        <header><h3>부하 구분은 계절별 요금 시간표다</h3><p class="caption">평일 시각별로 가장 흔한 라벨. 이름과 달리 실제 사용량 등급이 아니다. 3–10월과 11–2월의 최대부하 시간이 다르다. 필터와 무관.</p></header>
+        <div class="chart" id="c-tou" style="height:170px"></div>
+        <div class="legend" id="tou-legend"></div>
+      </article>
+      <article class="panel">
+        <header><h3>거의 멈춘 시간대만 역률이 크게 낮다</h3><p class="caption">15분 사용량 크기별 역률. 빨간 점은 할증 기준 미만이다. 필터와 무관.</p></header>
+        <div class="chart" id="c-pfbin" style="height:240px"></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== 예측 · 분류 ===== -->
+  <section class="pane" id="pane-model" role="tabpanel" aria-labelledby="tab-model" hidden>
+    <p class="question">15분 뒤 사용량을 미리 알 수 있는가? 부하 구분은 무엇으로 정해지는가?</p>
+    <div class="grid two">
+      <article class="panel">
+        <header><h3>15분 뒤 사용량: 평균 {{ reg.hgb.test_mae | num(1) }} kWh 오차</h3><p class="caption">11–12월 자료로 평가(같은 기간 15분 평균 사용량 {{ regression.test_mean_kwh | num(1) }} kWh). 평균 오차와 오차율이 낮을수록 좋다. 오차율은 절대 오차의 합을 실제 사용량의 합으로 나눈 값이다. ▸는 채택한 모델이다.</p></header>
+        <div class="table-wrap"><table id="t-reg"></table></div>
+        <p class="small muted">'직전값 그대로'보다 오차가 {{ reg_gain | pct }} 작다. 하루 전·일주일 전 값은 그날 가동 여부가 달라지는 경우가 많아 맞지 않는다.</p>
+      </article>
+      <article class="panel">
+        <header><h3>부하 구분은 요일·시각·계절 시간표로 {{ reverse.schedule_lookup_season.macro_f1 | num(2) }}만큼 맞힌다</h3><p class="caption">맞힌 정도(1이 만점). 3–12월로 만든 모델을 1–2월에 적용한 결과다. 실제 부하가 아니라 요금 시간대 라벨이라는 뜻이다.</p></header>
+        <div class="table-wrap"><table id="t-clf"></table></div>
+        <details class="small">
+          <summary>모든 모델과 11–12월 결과 보기</summary>
+          <p class="muted">처음 만든 모델은 11–12월에 무너졌고, 그 결과를 보고 계절 입력을 넣었다. 그래서 11–12월 점수는 탐색 결과다.</p>
+          <div class="table-wrap"><table id="t-clf-all"></table></div>
+        </details>
+      </article>
+    </div>
+
+    <article class="panel wide">
+      <header><h3>테스트 한 주 · {{ regression.week[0].t | md }}–{{ regression.week[-2].t | md }}</h3><p class="caption">15분 사용량. 예측은 가동 시작·정지 순간에만 한 칸 늦고 나머지는 실측과 거의 겹친다. '직전값 그대로'는 범례를 눌러 켤 수 있다.</p></header>
+      <div class="chart" id="c-week"></div>
+    </article>
+
+    <div class="grid three">
+      <article class="panel">
+        <header><h3>모델의 이점은 점심 정지·재가동 때 가장 크다</h3><p class="caption">시각별 평균 오차(kWh/15분). 12시·13시·08시처럼 사용량이 급변할 때 차이가 크다. 밤에는 둘 다 1 kWh 미만이며 '직전값 그대로'가 근소하게 낫다.</p></header>
+        <div class="chart" id="c-errhour"></div>
+      </article>
+      <article class="panel">
+        <header><h3>직전 15분 사용량이 결정적이다</h3><p class="caption">입력 하나를 뒤섞었을 때 평균 오차가 늘어나는 양(kWh). 클수록 중요하다.</p></header>
+        <div class="chart" id="c-imp"></div>
+      </article>
+      <article class="panel">
+        <header><h3>남은 오분류의 {{ errors_by_daytype["주말"].share_of_errors | pct }}가 주말에서 나온다</h3><p class="caption">최종 모델의 11–12월 결과(15분 기록 수). 대각선이 맞힌 것이다. 색은 각 행(실제 라벨) 안에서의 비율이다. 주말은 이 기간의 {{ (errors_by_daytype["주말"].slots / (errors_by_daytype["주말"].slots + errors_by_daytype["평일"].slots)) | pct }}다.</p></header>
+        <div class="chart" id="c-cm"></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== 휴무 · 이상 ===== -->
+  <section class="pane" id="pane-anomaly" role="tabpanel" aria-labelledby="tab-anomaly" hidden>
+    <p class="question">평소와 다르게 쓴 날은 언제이고, 이유는 무엇인가?</p>
+    <article class="panel wide">
+      <header><h3>하루 사용량이 평소와 얼마나 달랐나</h3><p class="caption">점 하나가 하루다. 그 이전의 같은 요일 4번(공휴일 제외)의 중앙값을 '평소'로 놓고 얼마나 벗어났는지를 편차 점수로 나타냈다. ±{{ meta.anomaly_z_day | num }}를 넘으면 이상이다. {{ anomaly.first_judged_day | md }} 이전은 비교 기준이 없어 판정하지 않았다. 사후 점검용이며, 실제 사유는 운영 기록으로 확인해야 한다.</p></header>
+      <div class="chart" id="c-z"></div>
+      <div class="legend" id="z-legend"></div>
+    </article>
+
+    <div class="grid two">
+      <article class="panel">
+        <header><h3>공휴일 {{ kpi.holidays }}일 중 평일 {{ kpi.weekday_holidays }}일, 그중 {{ kpi.holiday_shutdowns }}일 휴무</h3><p class="caption">공휴일이 아닌 평일의 하루 사용량 중앙값({{ kpi.regular_weekday_median_kwh | num }} kWh)과 비교했다. {{ meta.shutdown_ratio | pct }} 미만이면 휴무다. 주말과 겹친 공휴일은 판정하지 않는다.</p></header>
+        <div class="table-wrap"><table id="t-hol"></table></div>
+      </article>
+      <div class="stack">
+        <article class="panel">
+          <header><h3>이상 일자와 공휴일 외 휴무</h3><p class="caption">공휴일은 제외했다.</p></header>
+          <div class="table-wrap"><table id="t-days"></table></div>
+        </article>
+        <article class="panel">
+          <header><h3>15분 단위 점검 목록 {{ anomaly.episode_count }}건</h3><p class="caption">예측보다 크게 많거나 적게 쓴 15분 기록이 {{ anomaly.min_run_minutes }}분 이상 이어진 경우다. 확정 이상이 아니라 현장 확인용 목록이다. 차이 합계가 큰 순으로 상위 {{ anomaly.episodes | length }}건만 보이며, 공휴일에 걸친 것은 표시했다.</p></header>
+          <div class="table-wrap scroll"><table id="t-ep"></table></div>
+          <details class="small">
+            <summary>왜 확정 이상이 아닌가</summary>
+            <p class="muted">기준을 {{ sens[0].z }}에서 {{ sens[-1].z }}로 올려도 해당 기록 비율이 {{ sens[0].flag_rate | pct(1) }}에서 {{ sens[-1].flag_rate | pct(1) }}로 천천히만 준다. 설비가 켜지고 꺼질 때마다 큰 차이가 생기기 때문이다. 다른 방식의 알고리즘(Isolation Forest)과 겹치는 비율도 {{ anomaly.iforest.share_of_residual_flags_also_iforest | pct }}에 그친다(무작위로 골랐을 때 {{ anomaly.iforest.chance_overlap | pct(1) }}).</p>
+          </details>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 절감 시나리오 ===== -->
+  <section class="pane" id="pane-scenario" role="tabpanel" aria-labelledby="tab-scenario" hidden>
+    <p class="question">요금과 무효전력량을 어디서 줄일 수 있는가? 슬라이더를 움직이면 효과가 바로 계산된다.</p>
+    <div class="assumption"><span class="chip warn">가정값</span><p>데이터에 요금 정보가 없어 국내 산업용 TOU 요금(시간대별 차등 요금)을 단순화한 예시 단가를 썼다. 전력량 단가 경부하 {{ meta.tariff.energy_rate_per_kwh.Light_Load | num }} · 중간부하 {{ meta.tariff.energy_rate_per_kwh.Medium_Load | num }} · 최대부하 {{ meta.tariff.energy_rate_per_kwh.Maximum_Load | num }}원/kWh, 기본요금 {{ meta.tariff.demand_rate_per_kw_month | num }}원/kW·월, 월 역률 {{ meta.tariff.pf_threshold | num(2) }} 미만 시 1%p마다 전력량요금의 {{ meta.tariff.pf_penalty_rate_per_pct | pct(1) }} 할증.</p></div>
+    <div class="grid two">
+      <article class="panel">
+        <header><h3>역률 보상</h3><p class="caption">목표 역률보다 낮은 15분 기록의 지상 무효전력량을 목표 수준까지 줄인다(콘덴서 설치 가정). 사용량과 CO₂는 변하지 않는다.</p></header>
+        <label class="slider" for="pf-slider"><span>목표 역률 <strong class="num" id="pf-value"></strong></span>
+          <input type="range" id="pf-slider" min="0" step="1"></label>
+        <dl class="readout" id="pf-readout"></dl>
+        <p class="small muted">목표보다 낮은 기록만 끌어올리고 이미 높은 기록은 그대로 두므로, 연간 역률은 목표보다 높게 나온다.</p>
+        <div class="chart short" id="c-pf"></div>
+      </article>
+      <article class="panel">
+        <header><h3>부하 이동</h3><p class="caption">최대부하 시간대 사용량의 일부를 같은 날 경부하 시간대(주로 야간)로 고르게 옮긴다. 총 사용량은 그대로다. {% if scenarios.first_demand_increase is not none %}이동 비율 {{ scenarios.first_demand_increase | pct }}부터는 야간에 새 피크가 생겨 기본요금이 오히려 늘어난다.{% endif %}</p></header>
+        <label class="slider" for="shift-slider"><span>이동 비율 <strong class="num" id="shift-value"></strong></span>
+          <input type="range" id="shift-slider" min="0" step="1"></label>
+        <dl class="readout" id="shift-readout"></dl>
+        <p class="small muted">아래 막대는 항목별 연간 요금 변화, 점은 합계다. 실제로 옮길 수 있는 공정이 있는지는 별도 판단이 필요하다.</p>
+        <div class="chart short" id="c-shift"></div>
+      </article>
+    </div>
+  </section>
+
+  <footer class="foot small muted">
+    <p>출처: {{ meta.source }}. {{ meta.citation }} 모든 수치는 <span class="num">uv run python -m steelenergy.pipeline</span>이 만든 결과에서 읽는다. 재현 방법은 <span class="num">WORKFLOW.md</span>에 있다. 생성 {{ generated_at[:10] }}.</p>
+  </footer>
+</div>
+
+<script id="data" type="application/json">{{ data_json | safe }}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.6.0/echarts.min.js"></script>
+<script>
+{% include "common/charts.js" %}
+{% include "common/views.js" %}
+{% include "dashboard/ui.js" %}
+{% include "dashboard/tabs/pattern.js" %}
+{% include "dashboard/tabs/model.js" %}
+{% include "dashboard/tabs/anomaly.js" %}
+{% include "dashboard/tabs/scenario.js" %}
+{% include "dashboard/dashboard.js" %}
+</script>

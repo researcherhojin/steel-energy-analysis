@@ -1,0 +1,108 @@
+/* Document grid: a reading column and a margin column on one baseline.
+   Every block starts on the same left edge; figures choose their width by shape:
+   .span   – both columns (time series, strips, wide tables)
+   .main   – reading column only, with its reading guide in .side
+   Vertical rhythm is in multiples of --u (8px). */
+.doc {
+  --u: 0.5rem;
+  --gap: 3rem;
+  --side: 15rem;
+  max-width: 64rem; margin: 0 auto;
+  padding: calc(var(--u) * 7) 16px calc(var(--u) * 10);
+  display: flex; flex-direction: column; gap: calc(var(--u) * 8);
+  font-size: 1rem; line-height: 1.75;
+}
+@media (min-width: 720px) { .doc { padding-inline: 32px; } }
+
+.row { display: grid; grid-template-columns: minmax(0, 1fr); gap: calc(var(--u) * 2); align-items: start; }
+@media (min-width: 900px) {
+  .row { grid-template-columns: minmax(0, 1fr) var(--side); column-gap: var(--gap); }
+  .row > .span { grid-column: 1 / -1; }
+  .row > .side { grid-column: 2; }
+}
+.row > * { min-width: 0; }
+.prose > * + *, .note > * + * { margin-top: calc(var(--u) * 2); }
+.prose p, .prose li { max-width: 42em; }
+.prose ul, .prose ol { margin: 0; padding-left: 1.25rem; display: grid; gap: var(--u); }
+
+/* Title block */
+.doc-head { border-top: 3px solid var(--ink); padding-top: calc(var(--u) * 3); }
+.doc-head h1 { font-size: clamp(1.75rem, 3.6vw, 2.375rem); letter-spacing: -0.015em; }
+.doc-head .purpose { font-size: 1.0625rem; color: var(--ink-2); }
+.facts { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: calc(var(--u) * .5) calc(var(--u) * 2); font-size: var(--step--1); }
+.facts dt { color: var(--ink-3); }
+.facts dd { margin: 0; color: var(--ink-2); }
+
+/* Chapter */
+.chapter { display: flex; flex-direction: column; gap: calc(var(--u) * 4); border-top: 1px solid var(--rule); padding-top: calc(var(--u) * 4); }
+.ch-head h2 { font-size: 1.5rem; display: grid; grid-template-columns: 2.25rem minmax(0, 1fr); align-items: baseline; }
+.ch-head h2 .no { font-family: var(--font-num); font-size: 1rem; font-weight: 500; color: var(--accent); }
+.lead { font-size: 1.0625rem; color: var(--ink); padding-left: 2.25rem; }
+@media (max-width: 899px) { .lead { padding-left: 0; } }
+h3 { font-size: 1.0625rem; margin-top: calc(var(--u) * 1); }
+
+/* Key numbers in the margin */
+.keys { margin: 0; display: grid; gap: calc(var(--u) * 2); }
+.keys div { border-left: 2px solid var(--accent); padding-left: calc(var(--u) * 1.5); }
+.keys dt { font-size: var(--step--1); color: var(--ink-2); line-height: 1.4; }
+.keys dd { margin: 0; font-family: var(--font-num); font-size: 1.5rem; font-weight: 500; line-height: 1.25; color: var(--ink); white-space: nowrap; }
+.keys dd .unit { font-size: 0.875rem; }
+@media (max-width: 899px) { .keys { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); } }
+
+/* Margin notes */
+.note { font-size: var(--step--1); line-height: 1.65; color: var(--ink-2); }
+.note h4 { margin: 0 0 calc(var(--u) * .5); font-size: var(--step--1); color: var(--ink); font-weight: 600; }
+.note dl { margin: 0; display: grid; gap: calc(var(--u) * 1); }
+.note dt { font-weight: 600; color: var(--ink); }
+.note dd { margin: 0; }
+
+/* Figures and tables share one caption system */
+.fig, .tbl { margin: 0; display: flex; flex-direction: column; gap: var(--u); }
+.cap-head { display: flex; gap: calc(var(--u) * 1.5); align-items: baseline; flex-wrap: wrap; border-top: 1px solid var(--ink); padding-top: var(--u); }
+.cap-no { font-family: var(--font-num); font-size: var(--step--1); color: var(--ink-2); flex: none; }
+.cap-title { font-weight: 600; font-size: 0.9375rem; }
+.cap-note { font-size: var(--step--1); color: var(--ink-2); line-height: 1.6; }
+.cap-note b { color: var(--ink); font-weight: 600; }
+.fig .chart { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: var(--u); box-sizing: border-box; }
+.chart.h-wide { height: 300px; }
+.chart.h-square { height: 460px; }
+.chart.h-strip { height: 170px; }
+.chart.h-bars { height: 150px; }
+.chart.h-std { height: 280px; }
+.legend { display: flex; flex-wrap: wrap; gap: calc(var(--u) * .5) calc(var(--u) * 2); font-size: var(--step--1); color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.dot { width: 0.65rem; height: 0.65rem; border-radius: 50%; display: inline-block; }
+
+.tbl table { font-size: 0.9375rem; }
+.tbl th { font-size: var(--step--1); vertical-align: bottom; white-space: normal; }
+.tbl td, .tbl th { padding: 0.5rem 0.75rem; }
+.tbl td:first-child, .tbl th:first-child { padding-left: 0; }
+.tbl tr.hl td { font-weight: 600; background: none; }
+.tbl tr.hl td:first-child::before { content: "▸ "; color: var(--accent); }
+.tbl tfoot td { border-top: 1px solid var(--ink-3); border-bottom: 0; font-weight: 600; }
+
+/* Summary: question | answer | figure, same three columns for all four rows */
+.qa { display: grid; gap: 0; border-top: 3px solid var(--ink); }
+.qa-row { display: grid; grid-template-columns: 2.25rem minmax(0, 1fr); gap: var(--u) 0; padding: calc(var(--u) * 2.5) 0; border-bottom: 1px solid var(--rule); }
+@media (min-width: 900px) {
+  .qa-row { grid-template-columns: 2.25rem minmax(0, 1fr) var(--side); }
+  .qa-row .keys { margin-left: var(--gap); }
+}
+.qa-no { font-family: var(--font-num); color: var(--accent); font-weight: 500; padding-top: 0.15rem; }
+.qa-q { font-size: var(--step--1); color: var(--ink-2); }
+.qa-a { font-weight: 600; font-size: 1.0625rem; line-height: 1.55; margin-top: 0.15rem; }
+.qa-body p { color: var(--ink-2); margin-top: var(--u); }
+.qa .keys { grid-column: 2; }
+@media (min-width: 900px) { .qa .keys { grid-column: 3; } }
+
+.callout { background: var(--accent-soft); border-radius: 4px; padding: calc(var(--u) * 1.5) calc(var(--u) * 2); }
+.callout p { max-width: none; }
+.callout strong { color: var(--ink); }
+
+details { border-top: 1px solid var(--rule); padding-top: calc(var(--u) * 1.5); }
+details + details { margin-top: 0; }
+summary { cursor: pointer; font-weight: 600; }
+details > .body { padding-top: calc(var(--u) * 2); display: flex; flex-direction: column; gap: calc(var(--u) * 2); }
+
+.foot { border-top: 1px solid var(--rule); padding-top: calc(var(--u) * 2); font-size: var(--step--1); color: var(--ink-2); }
+.note ul { margin: 0; padding-left: 1rem; display: grid; gap: 0.25rem; }

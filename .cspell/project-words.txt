@@ -1,0 +1,123 @@
+# Project dictionary for cSpell. One word per line; grouped by where the word comes from.
+# Add a word only if it is spelled correctly in its own context (a library API, a unit, a
+# name). Fix real typos instead of adding them here.
+
+# --- This project's identifiers -------------------------------------------------------
+steelenergy
+daytype
+errhour
+iforest
+josa
+pfbin
+rdiff
+wape
+
+# --- Units and domain terms ------------------------------------------------------------
+kvarh
+Varh
+autocorrelated
+hyperparameters
+
+# --- Proper nouns (data source, citation, fonts) ---------------------------------------
+DAEWOO
+Gwangyang
+Sathishkumar
+Nanum
+Noto
+Malgun
+Bonferroni
+
+# --- Operating systems and platforms ------------------------------------------------------
+USERPROFILE
+msvc
+
+# --- Tools and libraries ------------------------------------------------------------------
+dataviz
+cffi
+dataclass
+inplace
+ipykernel
+kernelspec
+matplotlib
+nbconvert
+numpy
+pycache
+pyproject
+pytest
+scikit
+scipy
+statsmodels
+testpaths
+venv
+
+# --- pandas / numpy API -------------------------------------------------------------------
+aggfunc
+allclose
+arccos
+autocorr
+categoricals
+dayofweek
+mergesort
+ndenumerate
+preds
+resid
+timespec
+
+# --- scipy / statsmodels / scikit-learn API ---------------------------------------------
+friedmanchisquare
+importances
+jaccard
+kruskal
+mannwhitneyu
+multipletests
+multitest
+pvalue
+wilcoxon
+
+# --- matplotlib API -----------------------------------------------------------------------
+axhline
+axisbelow
+cmap
+colorbar
+edgecolor
+facecolor
+figsize
+flierprops
+fontsize
+frameon
+gridspec
+hspace
+imshow
+labelcolor
+markeredgecolor
+markersize
+medianprops
+mpatches
+ncol
+sharex
+showfliers
+titlelocation
+titlesize
+titleweight
+ttflist
+vlines
+vmax
+vmin
+xlabel
+xtick
+xticks
+xycoords
+ylabel
+ylim
+ytick
+yticks
+zorder
+
+# --- HTML, CSS, Jinja ---------------------------------------------------------------------
+endfor
+figcaption
+labelledby
+nums
+selectattr
+stylesheet
+tablist
