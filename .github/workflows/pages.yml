@@ -1,7 +1,8 @@
 # Rebuild the report and dashboard from the raw CSV and publish them to GitHub Pages.
 # The build runs on Apple Silicon macOS: the boosted-tree and isolation-forest results differ in
-# the last digits across OS/CPU, and README's numbers were produced there. The tests (which compare
-# README with a fresh pipeline run) gate the deploy, so the site never disagrees with README.
+# the last digits across OS/CPU, and README's numbers were produced there. The checks (checks.yml: lint, and
+# tests that compare README with a fresh pipeline run) gate the build, so the site never
+# disagrees with README.
 name: Pages
 
 on:
@@ -19,13 +20,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+
   build:
+    needs: checks
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.3.0
       - run: uv sync --locked
-      - run: uv run pytest
       - run: uv run python -m steelenergy.pipeline
       - run: uv run python web/build.py
       - run: uv run python web/pages.py

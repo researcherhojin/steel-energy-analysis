@@ -1,0 +1,33 @@
+# Repository checks, shared by pull requests (ci.yml) and the Pages deploy (pages.yml).
+# Lint runs on Linux. The tests run on Apple Silicon macOS because they compare README's numbers
+# with a fresh pipeline run, and those numbers differ in the last digits on other OS/CPU.
+name: Checks
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run python notebooks/check_notebook.py
+      - run: uv run python tools/check_platforms.py
+      - run: npx --yes cspell@10.3.6 lint --dot --no-progress "**/*"
+
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0
+      - run: uv sync --locked
+      - run: uv run pytest
