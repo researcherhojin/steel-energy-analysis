@@ -12,6 +12,7 @@ UCI Machine Learning Repository의 *Steel Industry Energy Consumption* 데이터
 6. [데이터](#데이터)
 7. [저장소 구조](#저장소-구조)
 8. [관련 문서](#관련-문서)
+9. [라이선스](#라이선스)
 
 ## 개요
 
@@ -121,3 +122,8 @@ outputs/           analysis.json(실행 시 생성)과 보관용 PDF(v1/, v2/)
 | [CLAUDE.md](CLAUDE.md) | Claude Code가 이 저장소에서 작업할 때 따르는 규칙(영어). 코드 구조와 분석 규칙을 빠르게 파악하는 데에도 활용할 수 있습니다. |
 
 **유지보수 참고:** '핵심 결과' 표의 수치와 문구는 테스트(`tests/test_docs.py`)가 분석 결과와 글자 단위로 대조합니다. 분석 변경으로 수치가 달라지면 표를 갱신하고, 표의 문장을 수정할 때는 테스트의 `expected` 목록도 함께 수정하십시오.
+
+## 라이선스
+
+- **코드와 문서:** [MIT License](LICENSE)
+- **데이터**(`Steel_industry_data.csv`, `steel+industry+energy+consumption.zip`): 원 저작자의 CC BY 4.0을 따릅니다. 재사용 시 [데이터](#데이터) 절의 출처를 표기해야 합니다.

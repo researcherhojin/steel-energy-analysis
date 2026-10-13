@@ -26,6 +26,7 @@ Nanum
 Noto
 Malgun
 Bonferroni
+researcherhojin
 
 # --- Operating systems and platforms ------------------------------------------------------
 USERPROFILE
