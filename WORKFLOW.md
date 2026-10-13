@@ -215,6 +215,8 @@ flowchart LR
 - `pipeline.run()`은 분석 모듈의 `run()`을 순서대로 불러 결과 묶음(`Results`)을 만듭니다. 실행 정보(행 수, 기간, 연도)도 여기서 정리합니다.
 - `export.payload()`는 그 결과를 하나의 JSON으로 옮겨 적고 표시용 이름을 붙입니다. 계산은 하지 않습니다. 키를 지우거나 이름을 바꾸면 `SCHEMA_VERSION`을 올립니다.
 - `web/build.py`는 JSON을 HTML 템플릿에 넣습니다. 템플릿이 없는 값을 참조하면 빌드가 **실패**합니다(Jinja `StrictUndefined`). 숫자가 빈칸으로 조용히 나가는 일이 없습니다.
+- `web/pages.py`는 `build/`의 두 페이지에 문서 머리말(doctype, 문자 인코딩, 화면 폭)을 붙이고 첫 화면(`build/site/index.html`)을 더해 `build/site/`에 씁니다. GitHub Actions(`.github/workflows/pages.yml`)가 `main`에 올라온 변경마다 분석 → `web/build.py` → `web/pages.py`를 실행해 GitHub Pages에 배포합니다. `web/build.py`의 출력은 Artifact 게시용이라 머리말 없이 `<title>`로 시작합니다.
+- `tools/readme_figure.py`는 같은 JSON으로 README의 요일×시각 그림(`docs/images/`, 라이트·다크 두 장)을 그립니다. 분석이 바뀌면 다시 실행해 그림도 함께 커밋합니다.
 - `notebooks/build_notebook.py`도 같은 JSON을 읽어 노트북 설명 문장의 숫자를 채웁니다. 숫자 뒤의 조사(예: 0.73이다, 0.97로)는 `fix_josa()`가 맞춥니다.
 
 결과 파일(`outputs/analysis.json`)의 주요 키는 다음과 같습니다. 템플릿을 고칠 때 참고하세요.
@@ -252,6 +254,7 @@ flowchart LR
 | 대시보드 문장·패널 | `web/dashboard/index.html.j2`. 탭별 동작은 `web/dashboard/tabs/`의 해당 탭 파일, 탭 전환은 `web/dashboard/dashboard.js` |
 | 두 페이지가 함께 쓰는 차트 | `web/common/views.js` |
 | 색·글꼴·간격 | `web/common/tokens.css`. 라이트·다크 모드 값이 함께 있습니다. |
+| README 그림 | `tools/readme_figure.py`를 고친 뒤 다시 실행합니다. 색은 `web/common/tokens.css`의 순차 색(`--seq-*`)과 맞춥니다. |
 | 노트북 설명 문장 | `notebooks/build_notebook.py`의 해당 장 함수(예: 휴무·이상은 `_anomaly`). 노트북 파일을 직접 고치면 다음 생성 때 덮어씁니다. |
 | 새 분석 추가 | 아래 '새 분석을 추가하는 순서' 참고 |
 
@@ -352,14 +355,18 @@ steel-energy-analysis/
 │   ├── common/                   공통 색·글꼴(tokens.css), 차트(charts.js, views.js)
 │   ├── dashboard/                템플릿, 스타일, dashboard.js(탭 전환), ui.js(공통 도구), tabs/(탭별 동작)
 │   ├── report/                   보고서 템플릿·스타일·스크립트
-│   └── build.py                  JSON → HTML
+│   ├── build.py                  JSON → HTML
+│   └── pages.py                  HTML → GitHub Pages용 완전한 문서(build/site/)
 ├── tools/
-│   └── check_platforms.py        지원 환경별 설치 가능 여부 확인(아무것도 설치하지 않음)
+│   ├── check_platforms.py        지원 환경별 설치 가능 여부 확인(아무것도 설치하지 않음)
+│   └── readme_figure.py          README 그림 생성 → docs/images/
+├── docs/images/                  README 그림(라이트·다크)
+├── .github/workflows/pages.yml   GitHub Pages 자동 배포
 ├── tests/                        pytest (test_architecture.py: 모듈 경계, test_docs.py: 문서)
 ├── outputs/
 │   ├── analysis.json  (생성물)   분석 결과
 │   └── v1/, v2/                  직접 저장해 둔 이전 판 PDF (다시 만들 수 없음)
-└── build/    (생성물)            dashboard.html, report.html
+└── build/    (생성물)            dashboard.html, report.html, site/(배포용)
 ```
 
 `build/`와 `outputs/analysis.json`은 언제든 다시 만들 수 있어서 git에 넣지 않습니다(`.gitignore`). `outputs/v1/`, `outputs/v2/`의 PDF는 어떤 명령도 만들지 않으므로 지우지 마세요.

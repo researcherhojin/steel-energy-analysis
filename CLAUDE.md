@@ -17,6 +17,8 @@ uv run pytest tests/test_io.py::test_midnight_rows_move_to_next_day   # single t
 uv run ruff check .                                  # lint (also lints the notebook)
 uv run python -m steelenergy.pipeline                # run every analysis step → outputs/analysis.json
 uv run python web/build.py                           # render build/dashboard.html, build/report.html from that JSON
+uv run python web/pages.py                           # wrap them as full documents + index → build/site/ (GitHub Pages)
+uv run python tools/readme_figure.py                 # redraw docs/images/hour-weekday-{light,dark}.png for the README
 uv run python notebooks/build_notebook.py             # regenerate the notebook (prose numbers from the JSON)
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/analysis.ipynb
 uv run python notebooks/check_notebook.py             # error cells: 0 (exit 1 otherwise)
@@ -46,7 +48,8 @@ All computation lives in the analysis modules of `src/steelenergy/`. The allowed
 - `web/build.py` and `notebooks/build_notebook.py` import nothing from the package except `config`; everything else comes from `outputs/analysis.json`.
 - `web/build.py` uses `StrictUndefined`, so a missing key fails the build. Every number on the pages comes from the JSON; don't hardcode figures in templates.
 - `derived()` in `web/build.py` may only *select* or format values from the payload (e.g. `rdiff` for differences of displayed, rounded values), never compute new analysis.
-- Output files start with `<title>` and have no doctype/head, because the Artifact publisher wraps them in its own skeleton.
+- Output files start with `<title>` and have no doctype/head, because the Artifact publisher wraps them in its own skeleton. `web/pages.py` adds the doctype/charset/viewport and a landing page for GitHub Pages; `.github/workflows/pages.yml` reruns pipeline → build → pages on every push to `main` and deploys `build/site/` (https://researcherhojin.github.io/steel-energy-analysis/). Keep `build.py`'s fragment output unchanged (`test_build` checks it).
+- The README figure (`tools/readme_figure.py`) is committed under `docs/images/`; it aggregates `profile` as total sum / total count like `views.profileCells` and uses the `--seq-*` tokens. Rerun it and commit the PNGs when the analysis changes.
 - Colors are tokens in `web/common/tokens.css` with light and dark values. Chart palettes were checked with the dataviz skill's palette validator (not part of this repo; keep the existing palette unless asked to change it); the daily-anomaly chart encodes day kinds by color *and* marker shape (circle/square/triangle/diamond), so keep both if you change either. Every chart names its axes with units (`yTitle`/`xTitle` in `web/common/charts.js`); bars always start at zero, and truncated axes use dots instead.
 - `fmt` in `web/common/charts.js` rounds half-to-even to match Python's `format()`, so a value reads the same on both pages.
 

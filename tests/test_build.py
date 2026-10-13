@@ -39,3 +39,15 @@ def test_korean_particles_follow_the_number():
     assert fix("0.99이 나왔다") == "0.99가 나왔다"
     assert fix("0.97로 거의") == "0.97로 거의"
     assert fix("10%를 옮기면") == "10%를 옮기면"
+
+
+def test_pages_wrap_fragments_as_full_documents(payload, tmp_path):
+    data = export.write(payload, tmp_path / "analysis.json")
+    _build_module().render(data, tmp_path / "build")
+    spec = importlib.util.spec_from_file_location("pages", config.ROOT / "web" / "pages.py")
+    pages = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(pages)
+    for page in pages.write(tmp_path / "build", data, tmp_path / "site"):
+        html = page.read_text(encoding="utf-8")
+        assert html.startswith("<!doctype html>") and '<meta charset="utf-8">' in html
+        assert html.rstrip().endswith("</html>")

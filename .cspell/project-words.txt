@@ -81,6 +81,7 @@ axisbelow
 cmap
 colorbar
 edgecolor
+edgecolors
 facecolor
 figsize
 flierprops
@@ -90,11 +91,13 @@ gridspec
 hspace
 imshow
 labelcolor
+labelpad
 markeredgecolor
 markersize
 medianprops
 mpatches
 ncol
+pcolormesh
 sharex
 showfliers
 titlelocation

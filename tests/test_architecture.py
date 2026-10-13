@@ -34,9 +34,11 @@ ALLOWED = {
 }
 SCRIPTS = {
     "web/build.py": {"config"},
+    "web/pages.py": {"config"},
     "notebooks/build_notebook.py": {"config"},
     "notebooks/check_notebook.py": set(),
     "tools/check_platforms.py": set(),
+    "tools/readme_figure.py": {"config", "plots"},
 }
 
 
