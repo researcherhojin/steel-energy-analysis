@@ -1,28 +1,40 @@
 # 제철소 전력 사용 분석 (2018)
 
-제철소(철강 공장) 한 곳의 1년치 15분 단위 전력 기록을 분석한 저장소입니다. 데이터는 UCI의 Steel Industry Energy Consumption이며, 대우제철 광양 공장 자료입니다.
+UCI Machine Learning Repository의 *Steel Industry Energy Consumption* 데이터셋(대우제철 광양 공장, 2018년, 15분 단위 기록)을 분석한 프로젝트입니다. 분석 파이프라인, 분석 노트북, 대시보드, 보고서를 하나의 저장소에서 재현할 수 있도록 구성했습니다.
 
-분석은 네 가지 질문에 답합니다.
-1. 전력을 언제 몰아서 쓰는가?
-2. 사용량을 미리 알 수 있는가?
-3. 평소와 다르게 쓴 날은 언제인가?
+## 목차
+
+1. [개요](#개요)
+2. [결과물](#결과물)
+3. [핵심 결과](#핵심-결과)
+4. [해석상 유의사항](#해석상-유의사항)
+5. [실행 방법](#실행-방법)
+6. [데이터](#데이터)
+7. [저장소 구조](#저장소-구조)
+8. [관련 문서](#관련-문서)
+
+## 개요
+
+본 분석은 다음 네 가지 질문에 답하는 것을 목표로 합니다.
+
+1. 전력 사용은 어느 시간대에 집중되는가?
+2. 사용량을 사전에 예측할 수 있는가?
+3. 평소와 다른 사용 양상을 보인 날은 언제인가?
 4. 요금과 무효전력량을 줄일 여지는 어디에 있는가?
 
-그 과정에서 원본의 '부하 구분' 열이 실제로 무엇을 뜻하는지도 밝혔습니다.
+아울러 원본 데이터의 '부하 구분'(`Load_Type`) 열이 실제로 무엇을 나타내는지 검증하였습니다.
 
 ## 결과물
 
-| 결과물 | 파일 | 이런 분께 |
-|---|---|---|
-| 보고서 | `build/report.html` | 결론과 근거만 빠르게 보고 싶은 분(공장·에너지 관리자) |
-| 대시보드 | `build/dashboard.html` | 월·시간대를 골라 가며 수치를 직접 살펴보고 싶은 분 |
-| 분석 노트북 | `notebooks/analysis.ipynb` | 분석 과정과 판단 근거를 따라가고 싶은 분(분석가) |
+| 결과물 | 바로 보기 | 생성 위치 | 주요 독자 |
+|---|---|---|---|
+| 보고서 | [PDF](<outputs/v2/제철소 전력 분석 보고서.pdf>) | `build/report.html` | 결론과 근거를 확인하려는 공장·에너지 관리자 |
+| 대시보드 | [PDF](<outputs/v2/제철소 전력 2018 대시보드.pdf>) | `build/dashboard.html` | 월·시간대별 수치를 직접 탐색하려는 사용자 |
+| 분석 노트북 | [노트북](notebooks/analysis.ipynb) | `notebooks/analysis.ipynb` | 분석 과정과 판단 근거를 검토하려는 분석가 |
 
-세 결과물의 숫자는 모두 같은 분석 결과 파일(`outputs/analysis.json`)에서 나오므로 서로 일치합니다.
-
-**결과만 빨리 보려면**
-- 노트북은 실행 결과가 담긴 채로 저장소에 들어 있어서 바로 열어 볼 수 있습니다.
-- 보고서와 대시보드는 아래 '실행하기'의 `uv sync`, 분석, 페이지 생성 세 명령으로 만든 뒤 `build/report.html`을 브라우저로 여세요. 차트와 글꼴은 인터넷에서 불러오므로 인터넷 연결이 필요합니다.
+- 세 결과물의 수치는 모두 동일한 분석 결과 파일(`outputs/analysis.json`)에서 생성되므로 서로 일치합니다.
+- PDF는 HTML 결과물을 저장한 정적 사본입니다. 대시보드의 탭 전환·필터 등 상호작용 기능은 HTML 버전에서만 사용할 수 있습니다. 이전 판은 `outputs/v1/`에 보관되어 있습니다.
+- HTML 보고서와 대시보드는 [실행 방법](#실행-방법)에 따라 생성할 수 있습니다. 차트 라이브러리와 글꼴을 인터넷에서 불러오므로 열람 시 인터넷 연결이 필요합니다.
 
 ## 핵심 결과
 
@@ -34,33 +46,38 @@
 | 평소와 다른 날 | 평일 공휴일 15일 중 **7일**, 공휴일이 아닌 평일 **5일**이 휴무였고, 이상 판정은 **2일**입니다. 날짜는 대부분 달력 일정과 맞지만, 사유는 운영 기록으로 확인해야 합니다. | 보고서 5장 |
 | 줄일 여지 | 역률을 0.95까지 보상하면 무효전력량이 **39%** 줄어듭니다. 최대부하 시간대 사용량 10%를 경부하 시간대로 옮기면 연 **481만 원**(가정 요금 기준)을 아낍니다. | 보고서 6장 |
 
-**표의 용어**
-- **오차율:** 15분마다의 예측 오차를 모두 더해 실제 사용량 합으로 나눈 값입니다.
-- **맞힌 정도:** macro-F1입니다. 경부하·중간부하·최대부하를 각각 얼마나 잘 맞혔는지 평균한 값이며, 1이 만점입니다.
-- **역률:** 공급된 전력 중 실제로 일을 한 비율입니다. 1에 가까울수록 좋습니다.
-- **무효전력량(kVarh):** 전동기·변압기가 자기장을 만드는 데 오가는 전력의 양입니다. 일은 하지 않지만 설비 용량을 차지합니다.
+**용어 정의**
+- **오차율:** 15분 단위 예측 오차의 절댓값 합을 실제 사용량 합으로 나눈 값(WAPE)입니다.
+- **맞힌 정도:** macro-F1입니다. 경부하·중간부하·최대부하 각각의 F1 점수를 평균한 값이며, 1이 만점입니다.
+- **역률:** 공급된 전력 중 실제 일을 한 전력의 비율입니다. 1에 가까울수록 바람직합니다.
+- **무효전력량(kVarh):** 전동기·변압기가 자기장을 형성하는 데 쓰이는 전력량입니다. 실제 일은 하지 않으나 설비 용량을 점유합니다.
 
-## 실행하기
+## 해석상 유의사항
 
-**지원 환경:** Windows 10·11(64비트 x86, ARM64), macOS(Apple Silicon, Intel), Linux(x86_64, ARM64). 32비트 Windows는 핵심 분석 패키지가 지원을 중단해 실행할 수 없습니다. 자세한 표와 확인 방법은 [WORKFLOW.md의 2장](WORKFLOW.md#2-준비물)에 있습니다.
+- **금액은 가정값입니다.** 데이터에 요금 정보가 없어 국내 산업용 계시별 요금(시간대별 차등 단가)을 단순화한 예시 단가(`config.TARIFF_ASSUMPTIONS`)를 적용하였습니다. 금액의 절대 크기보다 방향을 참고하는 수치입니다.
+- **단일 공장의 1년치 자료입니다.** 생산량·공정·설비 정보가 없으므로 사용량 변화의 원인은 추정의 범위에 머뭅니다.
+- **부하 구분 분류 점수 일부는 탐색적 결과입니다.** 11–12월 평가 결과를 확인한 뒤 모델을 수정하였기 때문입니다. 위 표의 0.88과 0.96은 시간 방향을 뒤집은 별도 분할(3–12월 학습, 1–2월 평가)에서 산출한 값입니다.
+- **이상 판정은 사후 점검용입니다.** 판정 척도를 1년 전체 자료로 정하였으므로 실시간 경보로는 사용할 수 없습니다.
 
-준비물은 [uv](https://docs.astral.sh/uv/) 하나입니다. Python 3.12는 uv가 운영체제와 CPU에 맞게 알아서 받습니다.
-- **uv 설치 (macOS·Linux):** `curl -LsSf https://astral.sh/uv/install.sh | sh`
-- **uv 설치 (Windows PowerShell):** `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
+## 실행 방법
 
-먼저 저장소 폴더로 이동합니다. 폴더 이름의 `&` 때문에 경로를 따옴표로 감싸야 합니다.
+### 지원 환경
+
+Windows 10·11(64비트 x86, ARM64), macOS(Apple Silicon, Intel), Linux(x86_64, ARM64)를 지원합니다. 32비트 Windows는 핵심 분석 패키지가 지원하지 않아 실행할 수 없습니다. 세부 사항은 [WORKFLOW.md 2장](WORKFLOW.md#2-준비물)을 참고하십시오.
+
+### 준비
+
+[uv](https://docs.astral.sh/uv/)만 설치하면 됩니다. Python 3.12는 uv가 운영체제와 CPU에 맞추어 자동으로 내려받습니다.
+- **macOS·Linux:** `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- **Windows PowerShell:** `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
+
+### 실행
+
+아래 명령을 한 줄씩 차례로 실행합니다. 명령은 모든 운영체제에서 동일합니다.
 
 ```bash
-cd "/Users/이름/Desktop/DA&DV"          # macOS · Linux
-```
-
-```powershell
-cd "C:\Users\이름\Desktop\DA&DV"       # Windows
-```
-
-아래 명령은 모든 운영체제에서 같습니다. 한 줄씩 차례로 실행하세요.
-
-```bash
+git clone https://github.com/researcherhojin/steel-energy-analysis.git
+cd steel-energy-analysis
 uv sync
 uv run pytest
 uv run python -m steelenergy.pipeline
@@ -69,47 +86,38 @@ uv run python notebooks/build_notebook.py
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/analysis.ipynb
 ```
 
-차례로 패키지 설치, 테스트(1–3분), 분석(→ `outputs/analysis.json`), 보고서·대시보드 생성(→ `build/*.html`), 노트북 생성과 실행입니다. 단계별 설명, 정상 출력, 결과를 바꾸는 방법, 자주 막히는 곳은 [**WORKFLOW.md**](WORKFLOW.md)에 있습니다.
+각 명령은 순서대로 저장소 내려받기, 폴더 이동, 패키지 설치, 테스트(1–3분), 분석(→ `outputs/analysis.json`), 보고서·대시보드 생성(→ `build/*.html`), 노트북 생성 및 실행을 수행합니다. 단계별 설명, 정상 출력 예시, 설정 변경 방법, 문제 해결은 [WORKFLOW.md](WORKFLOW.md)에 정리되어 있습니다.
 
 ## 데이터
 
 - **출처:** V E, S., Shin, C., & Cho, Y. (2021). *Steel Industry Energy Consumption* [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C52G8C
 - **라이선스:** Creative Commons Attribution 4.0 International (CC BY 4.0)
 - **관련 논문:** Sathishkumar V E, Shin C., Cho Y. (2021). Efficient energy consumption prediction model for a data analytic-enabled industry building in a smart city. *Building Research & Information*, 49(1), 127–143.
-- **파일:** `Steel_industry_data.csv`(35,040행)와 원본 압축 파일 `steel+industry+energy+consumption.zip`. 두 파일의 내용은 같습니다.
+- **파일:** `Steel_industry_data.csv`(35,040행)와 원본 압축 파일 `steel+industry+energy+consumption.zip`. 두 파일의 내용은 동일합니다.
 
-원본을 읽을 때 주의할 점이 두 가지 있습니다.
-- 날짜가 일/월/연 순서입니다.
-- 매일 마지막 기록(24:00)이 같은 날짜의 00:00으로 찍혀 있습니다.
-
-분석 코드가 둘 다 보정합니다(`src/steelenergy/io.py`).
-
-## 해석할 때 주의할 점
-
-- **금액은 가정값입니다.** 데이터에 요금 정보가 없어 국내 산업용 계시별 요금(시간대마다 단가가 다른 요금)을 단순화한 예시 단가(`config.TARIFF_ASSUMPTIONS`)를 썼습니다. 금액의 크기보다 방향을 보는 숫자입니다.
-- **공장 한 곳, 1년치 자료입니다.** 생산량·공정·설비 정보가 없어 사용량이 왜 바뀌었는지는 추정만 할 수 있습니다.
-- **부하 구분 분류 점수 일부는 탐색 결과입니다.** 11–12월 결과를 본 뒤 모델을 고쳤기 때문입니다. 위 표의 0.88과 0.96은 시간 방향을 뒤집은 별도 분할(3–12월 학습, 1–2월 평가)로 낸 값입니다.
-- **이상 판정은 사후 점검입니다.** 점수의 척도를 1년 전체 자료로 정했으므로, 그날 바로 울리는 경보로 쓸 수 없습니다.
-
-## 문서 안내
-
-| 문서 | 내용 |
-|---|---|
-| `README.md` | 이 문서. 무엇을, 왜 분석했고 결과가 무엇인지 |
-| [WORKFLOW.md](WORKFLOW.md) | 처음부터 따라 하기: 실행, 분석 단계별 설명, 수정 방법, 검증, 문제 해결 |
-| [CLAUDE.md](CLAUDE.md) | Claude Code가 이 저장소에서 작업할 때 따르는 규칙(영어). 코드 구조와 지켜야 할 분석 규칙을 빠르게 파악할 때도 쓸 수 있습니다. |
-
-**유지보수 메모:** 위 '핵심 결과' 표의 숫자와 문구는 테스트(`tests/test_docs.py`)가 분석 결과와 글자 그대로 대조합니다. 분석을 바꿔 숫자가 달라지면 이 표를 고치세요. 표의 문장을 다듬을 때는 테스트의 `expected` 목록도 함께 고쳐야 합니다.
+원본 데이터에는 다음 두 가지 특성이 있으며, 분석 코드(`src/steelenergy/io.py`)에서 모두 보정합니다.
+- 날짜가 일/월/연 순서로 기록되어 있습니다.
+- 매일 마지막 기록(24:00)이 같은 날짜의 00:00으로 기록되어 있습니다.
 
 ## 저장소 구조
 
 ```
-src/steelenergy/   분석 코드 (계산 함수는 모두 여기에)
-notebooks/         노트북과 노트북 생성기
+src/steelenergy/   분석 코드 (모든 계산 함수)
+notebooks/         분석 노트북과 노트북 생성기
 web/               보고서·대시보드 템플릿과 빌드 스크립트
 tests/             테스트
-build/             실행하면 생기는 보고서·대시보드 (git에 넣지 않음)
-outputs/           analysis.json(실행하면 생김)과 직접 저장해 둔 이전 판 PDF(v1/, v2/)
+build/             생성된 보고서·대시보드 HTML (git 관리 대상 아님)
+outputs/           analysis.json(실행 시 생성)과 보관용 PDF(v1/, v2/)
 ```
 
-`outputs/v1/`, `outputs/v2/`의 PDF는 어떤 명령으로도 다시 만들 수 없으니 지우지 마세요. 자세한 구조는 [WORKFLOW.md의 9장](WORKFLOW.md#9-폴더-구조)에 있습니다.
+`outputs/v1/`, `outputs/v2/`의 PDF는 다시 생성할 수 없는 보관본이므로 삭제하지 마십시오. 상세 구조는 [WORKFLOW.md 9장](WORKFLOW.md#9-폴더-구조)을 참고하십시오.
+
+## 관련 문서
+
+| 문서 | 내용 |
+|---|---|
+| `README.md` | 본 문서. 분석 목적, 결과물, 핵심 결과 |
+| [WORKFLOW.md](WORKFLOW.md) | 재현 절차: 실행, 분석 단계별 설명, 설정 변경, 검증, 문제 해결 |
+| [CLAUDE.md](CLAUDE.md) | Claude Code가 이 저장소에서 작업할 때 따르는 규칙(영어). 코드 구조와 분석 규칙을 빠르게 파악하는 데에도 활용할 수 있습니다. |
+
+**유지보수 참고:** '핵심 결과' 표의 수치와 문구는 테스트(`tests/test_docs.py`)가 분석 결과와 글자 단위로 대조합니다. 분석 변경으로 수치가 달라지면 표를 갱신하고, 표의 문장을 수정할 때는 테스트의 `expected` 목록도 함께 수정하십시오.

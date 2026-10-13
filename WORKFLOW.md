@@ -15,14 +15,14 @@
 
 Windows, macOS, Linux에서 모두 같은 명령으로 실행합니다. 운영체제마다 다른 부분(uv 설치, 경로 형식, 한글 글꼴)은 2장에 따로 적었습니다.
 
-명령은 모두 저장소 최상위 폴더(`DA&DV/`)에서 실행합니다. 폴더 이름에 `&`가 있으므로 `cd` 할 때는 경로를 따옴표로 감싸세요. `&`는 PowerShell과 cmd에서도 특별한 문자라서 따옴표가 필요합니다.
+명령은 모두 저장소 최상위 폴더(`steel-energy-analysis/`)에서 실행합니다. 경로에 공백이나 한글이 들어 있을 수 있으므로 `cd` 할 때는 경로를 따옴표로 감싸는 편이 안전합니다.
 
 ```bash
-cd "/Users/이름/Desktop/DA&DV"          # macOS · Linux (bash, zsh)
+cd "/Users/이름/Desktop/steel-energy-analysis"    # macOS · Linux (bash, zsh)
 ```
 
 ```powershell
-cd "C:\Users\이름\Desktop\DA&DV"       # Windows (PowerShell, cmd)
+cd "C:\Users\이름\Desktop\steel-energy-analysis" # Windows (PowerShell, cmd)
 ```
 
 ---
@@ -311,7 +311,7 @@ npx cspell lint --dot "**/*" # (선택, Node.js 필요) 맞춤법: Issues found:
 | Windows PowerShell 5.1에서 `&&`가 오류 | 구버전 PowerShell은 `&&`를 지원하지 않습니다. 이 문서의 명령은 한 줄에 하나씩 쓰여 있으니 그대로 차례로 실행하세요. |
 | Windows 32비트에서 `uv sync`가 패키지를 못 찾음 | 2.1에 적은 대로 32비트 Windows는 지원하지 않습니다. 64비트 Windows에서 실행하세요. |
 | Windows ARM64에서 설치가 느림 | 처음 한 번은 ARM64용 Python과 패키지를 받느라 시간이 걸립니다. 컴파일은 하지 않습니다. |
-| `cd: no such file or directory` | 폴더 이름의 `&` 때문입니다. 경로를 따옴표로 감싸세요. |
+| `cd: no such file or directory` | 경로에 공백이나 특수 문자가 있으면 생깁니다. 경로를 따옴표로 감싸세요. |
 | 빌드 중 `jinja2.exceptions.UndefinedError` | 템플릿이 JSON에 없는 키를 읽은 것입니다. `pipeline`을 다시 실행했는지 확인하고, 새 키라면 `export.py`에 추가합니다. |
 | 노트북 그래프의 한글이 네모로 나옴 | 한글 글꼴이 없다는 경고가 함께 나옵니다. 2.3의 안내대로 글꼴을 설치하세요(Linux는 `sudo apt install fonts-nanum`). 설치한 뒤에도 그대로면 matplotlib 글꼴 캐시를 지우고 다시 실행합니다(macOS·Linux `~/.cache/matplotlib`, Windows `%USERPROFILE%\.matplotlib`). 다른 글꼴을 쓰려면 `src/steelenergy/plots.py`의 `KOREAN_FONTS`에 이름을 추가하세요. |
 | git으로 받은 뒤 줄바꿈 때문에 파일이 모두 바뀐 것으로 보임 | `.gitattributes`가 텍스트 파일의 줄바꿈을 LF로 고정합니다. 이 파일이 생기기 전에 받은 저장소라면 `git add --renormalize .`를 한 번 실행하세요. |
@@ -323,7 +323,7 @@ npx cspell lint --dot "**/*" # (선택, Node.js 필요) 맞춤법: Issues found:
 ## 9. 폴더 구조
 
 ```
-DA&DV/
+steel-energy-analysis/
 ├── README.md                     무엇을 분석했고 결과가 무엇인지
 ├── WORKFLOW.md                   이 문서: 처음부터 따라 하기
 ├── CLAUDE.md                     Claude Code용 작업 규칙(영어)

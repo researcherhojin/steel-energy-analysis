@@ -11,7 +11,7 @@ DOCS = ["README.md", "WORKFLOW.md", "CLAUDE.md"]
 # Relative paths in the docs are written from the repo root or from these folders.
 BASES = ["", "web/", "src/steelenergy/", "notebooks/"]
 GENERATED = ("build/", "outputs/")
-REPO_ROOT_NAME = "DA&DV/"
+REPO_ROOT_NAME = "steel-energy-analysis/"
 MODULES = {name: f"steelenergy.{name}" for name in
            ("config", "io", "validate", "features", "eda", "stats", "anomaly", "scenarios",
             "export", "pipeline", "labels", "plots")}
